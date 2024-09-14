@@ -8,9 +8,9 @@ const jwt = require('jsonwebtoken')
 router.post('/', verifyTokenAndAuthorization, async (req, res) => {
     const {token} = req.body
     try{
-        const user = jwt.verify(token, process.env.JWT_SEC)
+        const user = jwt.verify(token, process.env.JWT_SEC) //verify the token provided
         const username = user.username
-        const data = await User.findOne({username})
+        const data = await User.findOne({username}) //find the user if token is verified
         res.status(200).json(data)
     }
     catch(err){
@@ -19,7 +19,7 @@ router.post('/', verifyTokenAndAuthorization, async (req, res) => {
 })
 
 
-//update a user
+//update a user - pastScores and highestScores
 router.put('/:id', verifyTokenAndAuthorization, async (req, res) => {
     try{
         const updatedUser = await User.findByIdAndUpdate(req.params.id, {
@@ -32,34 +32,10 @@ router.put('/:id', verifyTokenAndAuthorization, async (req, res) => {
     }
 })
 
-
-//delete a user
-router.delete('/:id', verifyTokenAndAuthorization, async (req, res) => {
-    try{
-        await User.findByIdAndDelete(req.params.id)
-        res.status(200).json("User Deleted")
-    }
-    catch(err){
-        res.status(500).json(err)
-    }
-})
-
-
-// get a user by id
-router.get('/:id', async (req, res) => {
-    try{
-        const user = await User.findById(req.params.id)
-        const {password, ...others} = user._doc
-        res.status(200).json(others)
-    }
-    catch(err){
-        res.status(500).json(err)
-    }
-})
-
-
+// get top 10 users based on highest score
 router.get('/', async (req, res) => {
     try {
+        //password is removed from the object so it does not reaches the frontend
         const users = await User.find().sort({'highestScore.score': -1}).limit(10).select('-password'); 
         res.status(200).json(users)
     } catch (error) {
